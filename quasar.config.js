@@ -63,7 +63,7 @@ module.exports = configure(function (/* ctx */) {
       // publicPath: '/',
       // analyze: true,
       env: {
-        API: 'https://demo.mercuryfire.com.tw:49110/',
+        API: 'https://dahua.metcfire.com.tw/api/CRUDTest/',
       },
       // rawDefine: {}
       // ignorePublicFolder: true,
@@ -87,7 +87,7 @@ module.exports = configure(function (/* ctx */) {
     proxy: {
       // 將所有以/api開頭的請求代理
       '/crudTest': {
-        target: 'https://demo.mercuryfire.com.tw:49110/',
+        target: 'https://dahua.metcfire.com.tw/api/CRUDTest/',
         changeOrigin: true,
       },
     },
