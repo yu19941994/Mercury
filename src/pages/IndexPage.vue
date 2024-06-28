@@ -4,7 +4,12 @@
       <div class="q-mb-xl">
         <q-input v-model="tempData.name" label="姓名" />
         <q-input v-model="tempData.age" label="年齡" />
-        <q-btn color="primary" class="q-mt-md">新增</q-btn>
+        <q-btn
+          color="primary"
+          class="q-mt-md"
+          @click="addMode.value ? handleAddData() : handleUpdateData()"
+          >{{ addMode.value ? '新增' : '更新' }}</q-btn
+        >
       </div>
 
       <q-table
@@ -80,18 +85,18 @@
 <script setup lang="ts">
 import axios from 'axios';
 import { QTableProps } from 'quasar';
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 interface btnType {
   label: string;
   icon: string;
   status: string;
 }
-const blockData = ref([
-  {
-    name: 'test',
-    age: 25,
-  },
-]);
+interface Item {
+  name: string;
+  age: number;
+}
+const addMode = ref(true);
+const blockData = ref<Item[]>([]);
 const tableConfig = ref([
   {
     label: '姓名',
@@ -123,9 +128,82 @@ const tempData = ref({
   name: '',
   age: '',
 });
-function handleClickOption(btn, data) {
-  // ...
+
+// POST
+async function handleAddData() {
+  console.log('add data');
+  try {
+    const response = await axios.post(
+      'https://dahua.metcfire.com.tw/api/CRUDTest',
+      {
+        name: tempData.value.name,
+        age: tempData.value.age,
+      }
+    );
+    console.log('Data Added:', response.data);
+    fetchData();
+  } catch (err) {
+    error.value = (err as Error).message;
+  }
 }
+
+// PATCH
+async function handleUpdateData() {
+  try {
+    const response = await axios.patch(
+      'https://dahua.metcfire.com.tw/api/CRUDTest',
+      {
+        name: tempData.value.name,
+        age: tempData.value.age,
+      }
+    );
+    console.log('Data Modified:', response.data);
+    fetchData();
+  } catch (err) {
+    error.value = (err as Error).message;
+  }
+}
+
+// PATCH、DELETE
+async function handleClickOption(btn, data) {
+  if (btn.status === 'edit') {
+    addMode.value = false;
+    tempData.value.name = data.name;
+    tempData.value.age = data.age;
+    console.log(addMode.value);
+  }
+  if (btn.status === 'delete') {
+    try {
+      const response = await axios.delete<Item[]>(
+        `https://dahua.metcfire.com.tw/api/CRUDTest/${data.id}`
+      );
+      console.log('Data DELETE:', data.id);
+      fetchData();
+    } catch (err) {
+      error.value = err.message;
+    }
+  }
+}
+
+const loading = ref(true);
+const error = ref<string | null>(null);
+
+// GET
+async function fetchData() {
+  try {
+    const response = await axios.get<Item[]>(
+      'https://dahua.metcfire.com.tw/api/CRUDTest/a'
+    );
+    blockData.value = response.data;
+  } catch (err) {
+    error.value = err.message;
+  }
+}
+
+onMounted(function () {
+  fetchData();
+  console.log(addMode.value);
+});
 </script>
 
 <style lang="scss" scoped>
